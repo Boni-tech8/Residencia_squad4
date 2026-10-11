@@ -29,7 +29,7 @@ Teste: abra http://localhost:3001/api/health
 ```
 
 ### POST /api/validate
-Recebe o mesmo formato e retorna valid=true/false.
+Recebe o mesmo formato e retorna valid=true/false;
 
 ### GET /api/ai/status
 Indica que a IA ainda não está conectada nesta versão.

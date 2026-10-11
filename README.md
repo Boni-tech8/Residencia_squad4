@@ -6,7 +6,7 @@ Esta versão integra o plugin real do Figma ao backend local do AcessForge.
 
 ## O que foi implementado
 
-- Plugin Figma real preservado a partir do MVP 1 funcional.
+- Plugin Figma real preservado a partir do MVP 1 funcional;
 - Backend Express separado e funcional.
 - Comunicação `Figma Plugin → Backend` via HTTP.
 - Endpoint `POST /api/analyze` integrado ao fluxo de análise.
