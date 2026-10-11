@@ -1,0 +1,180 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AcessForge</title>
+</head>
+<body>
+  <div class="app">
+    <header class="topbar">
+      <div>
+        <div class="brand">Acess<span>Forge</span></div>
+        <div class="subtitle">Validação de acessibilidade</div>
+      </div>
+      <div id="connectionStatus" class="status"><span class="dot"></span> Figma conectado</div>
+    </header>
+
+    <main>
+      <section class="selection-card">
+        <div>
+          <div class="eyebrow">SELEÇÃO ATUAL</div>
+          <div id="selectionName" class="selection-name">Nenhum elemento selecionado</div>
+          <div id="selectionType" class="muted">Selecione um frame, componente ou elemento.</div>
+        </div>
+        <button id="analyzeBtn" class="icon-button" title="Analisar novamente">↻</button>
+      </section>
+
+      <section class="backend-card" id="backendCard">
+        <div class="backend-status-row">
+          <div>
+            <div class="eyebrow">BACKEND</div>
+            <strong id="backendStatus">Verificando conexão…</strong>
+          </div>
+          <span id="backendBadge" class="backend-badge checking">VERIFICANDO</span>
+        </div>
+        <div id="backendMessage" class="backend-message">O plugin tentará validar a seleção no backend e usará a análise local se o servidor estiver indisponível.</div>
+      </section>
+
+      <section class="summary-grid">
+        <div class="summary critical"><strong id="criticalCount">0</strong><span>Críticos</span></div>
+        <div class="summary warning"><strong id="warningCount">0</strong><span>Avisos</span></div>
+        <div class="summary info"><strong id="infoCount">0</strong><span>Informativos</span></div>
+        <div class="summary conforming"><strong id="conformingCount">0</strong><span>Conformes</span></div>
+      </section>
+
+      <section class="panel">
+        <div class="panel-title-row">
+          <div>
+            <div class="eyebrow">VALIDAÇÃO EM TEMPO REAL</div>
+            <h2>Ocorrências detectadas</h2>
+          </div>
+          <span id="nodeCount" class="pill">0 nós</span>
+        </div>
+        <div id="issues" class="issues empty">Selecione um elemento para iniciar a análise.</div>
+      </section>
+
+      <section class="panel metadata-panel">
+        <div class="eyebrow">METADATA DE ACESSIBILIDADE</div>
+        <div class="metadata-row"><span>Nome acessível</span><strong id="accessibleName">—</strong></div>
+        <div class="metadata-row"><span>Alt text</span><strong id="altText">—</strong></div>
+        <div class="metadata-row"><span>Role</span><strong id="role">—</strong></div>
+        <p class="hint">O MVP salva metadata como plugin data no elemento Figma. Ela poderá alimentar o handoff e a camada de IA nas próximas etapas.</p>
+      </section>
+    </main>
+
+    <footer>
+      <button id="closeBtn" class="secondary">Fechar</button>
+      <button id="reanalyzeBtn" class="primary">Analisar seleção</button>
+    </footer>
+  </div>
+
+  <script>
+    const $ = (id) => document.getElementById(id);
+    const severityLabel = { critical: 'CRÍTICO', warning: 'AVISO', info: 'INFO' };
+
+    function render(result) {
+      $('selectionName').textContent = result.root.name;
+      $('selectionType').textContent = `${result.root.type} · ${Math.round(result.root.width)} × ${Math.round(result.root.height)}`;
+      $('criticalCount').textContent = result.stats.critical;
+      $('warningCount').textContent = result.stats.warning;
+      $('infoCount').textContent = result.stats.info;
+      $('conformingCount').textContent = result.stats.conforming;
+      $('nodeCount').textContent = `${result.stats.nodes} nó${result.stats.nodes === 1 ? '' : 's'}`;
+      $('accessibleName').textContent = result.metadata.accessibleName || '—';
+      $('altText').textContent = result.metadata.altText || '—';
+      $('role').textContent = result.metadata.role || '—';
+
+      const box = $('issues');
+      box.classList.remove('empty');
+      if (!result.issues.length) {
+        box.innerHTML = '<div class="all-good"><span>✓</span><div><strong>Nenhuma ocorrência encontrada</strong><small>A seleção passou pelas regras disponíveis neste MVP.</small></div></div>';
+        return;
+      }
+
+      box.innerHTML = result.issues.map(issue => `
+        <article class="issue ${issue.severity}">
+          <div class="issue-top">
+            <span class="code">${issue.ruleId}</span>
+            <span class="severity">${severityLabel[issue.severity]}</span>
+          </div>
+          <h3>${escapeHtml(issue.title)}</h3>
+          <p>${escapeHtml(issue.description)}</p>
+          <div class="issue-meta"><span>${escapeHtml(issue.nodeName)}</span>${issue.wcag ? `<span>${escapeHtml(issue.wcag)}</span>` : ''}</div>
+          ${issue.fixable ? `<button class="fix" data-issue='${encodeURIComponent(JSON.stringify(issue))}'>${escapeHtml(issue.fixLabel || 'Aplicar correção')}</button>` : ''}
+        </article>
+      `).join('');
+
+      box.querySelectorAll('.fix').forEach(button => {
+        button.addEventListener('click', () => {
+          const issue = JSON.parse(decodeURIComponent(button.dataset.issue));
+          parent.postMessage({ pluginMessage: { type: 'fix-issue', issue } }, '*');
+          button.disabled = true;
+          button.textContent = 'Aplicando…';
+        });
+      });
+    }
+
+    function escapeHtml(value) {
+      return String(value).replace(/[&<>"']/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#039;' })[c]);
+    }
+
+    function renderBackendState(backend, source) {
+      if (!backend) return;
+      const status = $('backendStatus');
+      const badge = $('backendBadge');
+      const message = $('backendMessage');
+      badge.className = 'backend-badge';
+      if (backend.checking || source === 'local-loading') {
+        status.textContent = 'Verificando conexão…';
+        badge.textContent = 'VERIFICANDO';
+        badge.classList.add('checking');
+        message.textContent = `Tentando conectar em ${backend.url || 'localhost:3001'}.`;
+      } else if (backend.connected) {
+        status.textContent = 'Backend conectado';
+        badge.textContent = 'ONLINE';
+        badge.classList.add('online');
+        message.textContent = `Validação recebida do backend em ${backend.url || 'localhost:3001'}.`;
+      } else {
+        status.textContent = 'Backend indisponível';
+        badge.textContent = 'FALLBACK';
+        badge.classList.add('offline');
+        message.textContent = backend.message || 'A análise local continua funcionando normalmente.';
+      }
+    }
+
+    function setAnalyzeBusy(busy) {
+      const buttons = [$('analyzeBtn'), $('reanalyzeBtn')];
+      buttons.forEach(button => {
+        if (!button) return;
+        button.disabled = busy;
+        button.textContent = busy && button.id === 'reanalyzeBtn' ? 'Analisando…' : (button.id === 'reanalyzeBtn' ? 'Analisar seleção' : '↻');
+      });
+    }
+
+    window.onmessage = event => {
+      const msg = event.data.pluginMessage;
+      if (!msg) return;
+      if (msg.type === 'analysis-started') {
+        setAnalyzeBusy(true);
+        $('issues').className = 'issues empty';
+        $('issues').textContent = 'Analisando a seleção…';
+      }
+      if (msg.type === 'selection-empty') {
+        $('selectionName').textContent = 'Nenhum elemento selecionado';
+        $('selectionType').textContent = 'Selecione um frame, componente ou elemento.';
+        $('issues').className = 'issues empty';
+        $('issues').textContent = 'Selecione um elemento para iniciar a análise.';
+        ['criticalCount','warningCount','infoCount','conformingCount'].forEach(id => $(id).textContent = '0');
+        $('nodeCount').textContent = '0 nós';
+      }
+      if (msg.type === 'analysis') { setAnalyzeBusy(false); renderBackendState(msg.backend, msg.source); render(msg.result); }
+      if (msg.type === 'selection-empty') setAnalyzeBusy(false);
+    };
+
+    $('analyzeBtn').onclick = () => parent.postMessage({ pluginMessage: { type: 'analyze-selection' } }, '*');
+    $('reanalyzeBtn').onclick = () => parent.postMessage({ pluginMessage: { type: 'analyze-selection' } }, '*');
+    $('closeBtn').onclick = () => parent.postMessage({ pluginMessage: { type: 'close-plugin' } }, '*');
+  </script>
+</body>
+</html>

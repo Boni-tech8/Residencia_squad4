@@ -1,0 +1,18 @@
+{
+  "name": "AcessForge - MVP 2.5 Integrado",
+  "id": "acessforge-mvp1",
+  "api": "1.0.0",
+  "main": "dist/code.js",
+  "editorType": [
+    "figma"
+  ],
+  "documentAccess": "dynamic-page",
+  "networkAccess": {
+    "allowedDomains": [
+      "none"
+    ],
+    "devAllowedDomains": [
+      "http://localhost:3001"
+    ]
+  }
+}

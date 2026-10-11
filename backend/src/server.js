@@ -1,0 +1,12 @@
+import "dotenv/config";
+import express from "express";
+import cors from "cors";
+import healthRouter from "./routes/health.routes.js";
+import analyzeRouter from "./routes/analyze.routes.js";
+const app=express(), PORT=Number(process.env.PORT||3001);
+app.use(cors({origin:process.env.CORS_ORIGIN||"*"}));
+app.use(express.json({limit:"2mb"}));
+app.use("/api/health",healthRouter);
+app.use("/api",analyzeRouter);
+app.use((err,req,res,next)=>{console.error(err);res.status(500).json({ok:false,error:"INTERNAL_ERROR",message:"Erro interno no backend."});});
+app.listen(PORT,()=>console.log(`AcessForge backend running on http://localhost:${PORT}`));

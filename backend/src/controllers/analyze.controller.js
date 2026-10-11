@@ -1,0 +1,4 @@
+import {analyzeNodes} from "../services/accessibility.service.js";
+export function analyzeController(req,res){const {nodes}=req.body??{};if(!Array.isArray(nodes))return res.status(400).json({ok:false,error:"INVALID_INPUT",message:"O campo 'nodes' deve ser um array."});return res.json({ok:true,source:"backend",...analyzeNodes(nodes)});}
+export function validateController(req,res){const {nodes}=req.body??{};if(!Array.isArray(nodes))return res.status(400).json({ok:false,error:"INVALID_INPUT",message:"O campo 'nodes' deve ser um array."});const r=analyzeNodes(nodes);return res.json({ok:true,valid:r.issues.length===0,issues:r.issues,summary:r.summary});}
+export function aiStatusController(req,res){res.json({ok:true,available:false,mode:"deterministic-only",message:"A camada de IA ainda não está conectada. O backend está preparado para a próxima etapa."});}
