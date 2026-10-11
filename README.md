@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # AcessForge — MVP 2.5 Integrado
 
 **Copiloto de Handoff de Acessibilidade — Figma → Desenvolvimento**
@@ -109,3 +110,7 @@ plugin/dist/manifest.json
 A IA ainda não está conectada nesta versão. O backend possui o endpoint `/api/ai/status` indicando que a camada de IA está preparada para a próxima etapa.
 
 A próxima evolução é integrar as histórias de IA já definidas no projeto, mantendo a regra de que a IA apoia decisões sem substituir validações determinísticas e que alterações sugeridas passam por revalidação.
+=======
+# Residencia_squad4
+Residência do porto digital squad 4, faculdade SENAC 2026.2
+>>>>>>> 2800fa78c3ac733de4e832e535d09748333b65ee
