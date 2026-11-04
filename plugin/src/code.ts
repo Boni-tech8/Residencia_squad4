@@ -10,18 +10,26 @@ function localIssueFor(issues: Issue[], backendIssue: BackendIssue) {
 }
 
 function mergeBackendIssues(localIssues: Issue[], backendIssues: BackendIssue[]): Issue[] {
-  return backendIssues.map((backendIssue): Issue => {
-    const local = localIssueFor(localIssues, backendIssue);
+  const merged = new Map<string, Issue>();
+
+  for (const local of localIssues) {
+    merged.set(`${local.ruleId}:${local.nodeId}`, local);
+  }
+
+  for (const backendIssue of backendIssues) {
+    const key = `${backendIssue.code}:${backendIssue.nodeId}`;
+    const local = merged.get(key);
     if (local) {
-      return {
+      merged.set(key, {
         ...local,
-        description: backendIssue.message,
+        description: backendIssue.message || local.description,
         fixLabel: local.fixLabel || backendIssue.suggestion
-      };
+      });
+      continue;
     }
 
     const severity = backendIssue.severity === 'high' ? 'critical' : backendIssue.severity === 'medium' ? 'warning' : 'info';
-    return {
+    merged.set(key, {
       id: `${backendIssue.code}-${backendIssue.nodeId}`,
       ruleId: backendIssue.code,
       severity,
@@ -38,8 +46,10 @@ function mergeBackendIssues(localIssues: Issue[], backendIssues: BackendIssue[])
       nodeType: 'UNKNOWN',
       fixable: false,
       fixLabel: backendIssue.suggestion
-    };
-  });
+    });
+  }
+
+  return [...merged.values()];
 }
 
 function postLocalFallback(root: SceneNode, localResult: ReturnType<typeof analyzeNode>, message?: string) {
@@ -104,6 +114,51 @@ figma.on('selectionchange', () => { void sendAnalysis(); });
 figma.ui.onmessage = async (msg) => {
   if (msg.type === 'analyze-selection') {
     void sendAnalysis();
+    return;
+  }
+
+  if (msg.type === 'save-metadata') {
+    try {
+      const node = await figma.getNodeByIdAsync(String(msg.nodeId || ''));
+      if (!node || node.type === 'DOCUMENT' || node.type === 'PAGE') {
+        throw new Error('O elemento não existe mais. Selecione-o novamente e tente salvar.');
+      }
+      const metadata = msg.metadata || {};
+      const accessibleName = String(metadata.accessibleName || '').trim();
+      const altText = String(metadata.altText || '').trim();
+      const role = String(metadata.role || '').trim().toLowerCase();
+      if (accessibleName.length > 200 || altText.length > 500 || role.length > 50) {
+        throw new Error('Verifique os limites dos campos de metadata.');
+      }
+      node.setPluginData('a11y:accessibleName', accessibleName);
+      node.setPluginData('a11y:altText', altText);
+      node.setPluginData('a11y:role', role);
+      figma.ui.postMessage({ type: 'metadata-saved', message: 'Metadata salva no elemento selecionado.' });
+      figma.notify('Metadata de acessibilidade salva.', { timeout: 2500 });
+      void sendAnalysis();
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Não foi possível salvar a metadata.';
+      figma.ui.postMessage({ type: 'metadata-error', message });
+      figma.notify(message, { error: true, timeout: 4000 });
+    }
+    return;
+  }
+
+  if (msg.type === 'apply-ai-metadata') {
+    try {
+      const node = await figma.getNodeByIdAsync(String(msg.nodeId || ''));
+      if (!node || node.type === 'DOCUMENT' || node.type === 'PAGE') throw new Error('O elemento selecionado não existe mais. Execute a análise novamente.');
+      const value = String(msg.value || '').trim();
+      if (!value) throw new Error('A sugestão da IA está vazia.');
+      if (msg.metadataType === 'accessibleName') node.setPluginData('a11y:accessibleName', value);
+      else if (msg.metadataType === 'altText') node.setPluginData('a11y:altText', value);
+      else throw new Error('Tipo de metadata não suportado.');
+      figma.notify('Sugestão aplicada como metadata. Revise e execute a análise novamente.', { timeout: 3500 });
+      void sendAnalysis();
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Não foi possível aplicar a sugestão.';
+      figma.notify(message, { error: true, timeout: 4000 });
+    }
     return;
   }
 

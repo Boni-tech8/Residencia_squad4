@@ -6,16 +6,98 @@
   <title>AcessForge</title>
 </head>
 <body>
-  <div class="app">
-    <header class="topbar">
-      <div>
-        <div class="brand">Acess<span>Forge</span></div>
+  <section id="authScreen" class="auth-screen">
+    <div class="auth-card">
+      <div class="auth-brand">
+        <div class="brand">AcessForge</div>
         <div class="subtitle">Validação de acessibilidade</div>
       </div>
-      <div id="connectionStatus" class="status"><span class="dot"></span> Figma conectado</div>
+
+      <div id="loginForm">
+        <div class="auth-heading">Acesse sua conta</div>
+        <p class="auth-copy">Entre para continuar usando o AcessForge.</p>
+
+        <div class="auth-mode" role="group" aria-label="Tipo de acesso">
+          <button id="adminModeBtn" class="mode-tab active" type="button" aria-pressed="true">Administrador</button>
+          <button id="employeeModeBtn" class="mode-tab" type="button" aria-pressed="false">Funcionário</button>
+        </div>
+
+        <label class="field-label" for="loginEmail">E-mail</label>
+        <input id="loginEmail" class="field" type="email" placeholder="seu@email.com" autocomplete="username">
+
+        <label class="field-label" for="loginPassword">Senha</label>
+        <input id="loginPassword" class="field" type="password" placeholder="Digite sua senha" autocomplete="current-password">
+
+        <div id="teamCodeWrap" class="hidden">
+          <label class="field-label" for="loginTeamCode">Código da equipe</label>
+          <input id="loginTeamCode" class="field" type="text" placeholder="Informe o código fornecido pelo administrador" autocomplete="off">
+        </div>
+
+        <div id="loginError" class="form-error" role="alert"></div>
+        <button id="loginBtn" class="primary auth-submit" type="button">Entrar como administrador</button>
+        <p id="loginHelp" class="auth-footnote">O acesso administrativo é criado na configuração inicial do backend.</p>
+        <button id="createAccountLink" class="text-action auth-create-link" type="button">Não tem conta? Criar uma conta</button>
+      </div>
+
+      <div id="registerForm" class="hidden">
+        <div class="auth-heading">Criar conta</div>
+        <p id="registerIntro" class="auth-copy">Escolha o tipo de conta e preencha seus dados para começar.</p>
+
+        <label class="field-label" for="registerRole">Tipo de conta</label>
+        <select id="registerRole" class="field">
+          <option value="employee">Funcionário</option>
+          <option value="admin">Administrador</option>
+        </select>
+
+        <label class="field-label" for="registerName">Nome completo</label>
+        <input id="registerName" class="field" type="text" placeholder="Como podemos chamar você?" autocomplete="name" maxlength="100">
+
+        <label class="field-label" for="registerEmail">E-mail</label>
+        <input id="registerEmail" class="field" type="email" placeholder="seu@email.com" autocomplete="email" maxlength="180">
+
+        <label class="field-label" for="registerPassword">Criar senha</label>
+        <input id="registerPassword" class="field" type="password" placeholder="Mínimo de 8 caracteres" autocomplete="new-password" minlength="8" maxlength="128">
+
+        <label class="field-label" for="registerPasswordConfirm">Confirmar senha</label>
+        <input id="registerPasswordConfirm" class="field" type="password" placeholder="Digite a senha novamente" autocomplete="new-password" minlength="8" maxlength="128">
+
+        <div id="registerEmployeeFields">
+          <label class="field-label" for="registerTeamCode">Código da equipe</label>
+          <input id="registerTeamCode" class="field" type="text" placeholder="Código fornecido pelo administrador" autocomplete="off" maxlength="20">
+        </div>
+        <div id="registerAdminFields" class="hidden">
+          <label class="field-label" for="registerAdminCode">Código de autorização administrativa</label>
+          <input id="registerAdminCode" class="field" type="password" placeholder="Código configurado no backend" autocomplete="off" maxlength="128">
+          <p class="auth-footnote">O cadastro administrativo só é liberado com o código privado definido pelo responsável no arquivo backend/.env.</p>
+        </div>
+
+        <div id="registerError" class="form-error" role="alert"></div>
+        <button id="registerBtn" class="primary auth-submit" type="button">Criar minha conta</button>
+        <button id="backToLoginBtn" class="text-action" type="button">Já tenho uma conta. Voltar ao login</button>
+      </div>
+    </div>
+  </section>
+
+  <div class="app hidden" id="workspace">
+    <header class="topbar">
+      <div class="topbar-brand">
+        <div class="brand">AcessForge</div>
+        <div class="subtitle">Validação de acessibilidade</div>
+      </div>
+      <div class="topbar-actions">
+        <div id="connectionStatus" class="status"><span class="dot"></span> Figma conectado</div>
+        <span id="currentUser" class="user-chip"></span>
+        <button id="logoutBtn" class="small-action" type="button">Sair</button>
+      </div>
     </header>
 
-    <main>
+    <nav id="workspaceNav" class="workspace-nav hidden" aria-label="Navegação do plugin">
+      <button id="analysisTab" class="nav-tab active" type="button">Análise</button>
+      <button id="teamViewBtn" class="nav-tab hidden" type="button">Equipes</button>
+      <button id="usersViewBtn" class="nav-tab hidden" type="button">Usuários</button>
+    </nav>
+
+    <main id="analysisView">
       <section class="selection-card">
         <div>
           <div class="eyebrow">SELEÇÃO ATUAL</div>
@@ -34,6 +116,7 @@
           <span id="backendBadge" class="backend-badge checking">VERIFICANDO</span>
         </div>
         <div id="backendMessage" class="backend-message">O plugin tentará validar a seleção no backend e usará a análise local se o servidor estiver indisponível.</div>
+        <div id="aiStatus" class="ai-status">IA: verificando configuração…</div>
       </section>
 
       <section class="summary-grid">
@@ -55,15 +138,105 @@
       </section>
 
       <section class="panel metadata-panel">
-        <div class="eyebrow">METADATA DE ACESSIBILIDADE</div>
-        <div class="metadata-row"><span>Nome acessível</span><strong id="accessibleName">—</strong></div>
-        <div class="metadata-row"><span>Alt text</span><strong id="altText">—</strong></div>
-        <div class="metadata-row"><span>Role</span><strong id="role">—</strong></div>
-        <p class="hint">O MVP salva metadata como plugin data no elemento Figma. Ela poderá alimentar o handoff e a camada de IA nas próximas etapas.</p>
+        <div class="panel-title-row">
+          <div>
+            <div class="eyebrow">METADATA DE ACESSIBILIDADE</div>
+            <h2>Propriedades do elemento</h2>
+          </div>
+          <span class="pill">Editável</span>
+        </div>
+        <label class="field-label" for="metadataAccessibleName">Nome acessível</label>
+        <input id="metadataAccessibleName" class="field" type="text" maxlength="200" placeholder="Ex.: Abrir menu de navegação">
+        <label class="field-label" for="metadataAltText">Texto alternativo (alt text)</label>
+        <textarea id="metadataAltText" class="field metadata-textarea" rows="2" maxlength="500" placeholder="Descreva a informação relevante da imagem"></textarea>
+        <label class="field-label" for="metadataRole">Role semântico</label>
+        <select id="metadataRole" class="field">
+          <option value="">Não definido</option>
+          <option value="button">button — botão</option>
+          <option value="link">link — link</option>
+          <option value="checkbox">checkbox — caixa de seleção</option>
+          <option value="radio">radio — opção</option>
+          <option value="textbox">textbox — campo de texto</option>
+          <option value="heading">heading — título</option>
+          <option value="img">img — imagem informativa</option>
+          <option value="navigation">navigation — navegação</option>
+          <option value="main">main — conteúdo principal</option>
+          <option value="group">group — agrupamento</option>
+          <option value="presentation">presentation — decorativo</option>
+        </select>
+        <button id="saveMetadataBtn" class="primary form-submit" type="button" disabled>Salvar metadata no elemento</button>
+        <div id="metadataSaveMessage" class="inline-message" aria-live="polite">Selecione um elemento para editar suas propriedades.</div>
+        <p class="hint">Os dados são gravados no próprio elemento do Figma como plugin data. Eles acompanham o arquivo e podem ser usados no handoff; não alteram automaticamente o HTML/ARIA de um site publicado.</p>
       </section>
     </main>
 
-    <footer>
+    <section id="teamView" class="team-view hidden">
+      <div class="team-head">
+        <div>
+          <div class="eyebrow">GESTÃO DE EQUIPES</div>
+          <h2 id="teamViewHeading">Equipes cadastradas</h2>
+          <p class="muted" id="teamViewDescription">Crie equipes e compartilhe o código de acesso.</p>
+        </div>
+        <button id="backAnalysisBtn" class="small-action" type="button">Voltar à análise</button>
+      </div>
+
+      <div id="adminTools">
+        <section class="panel">
+          <div class="panel-title-row">
+            <div><div class="eyebrow">ORGANIZAÇÃO</div><h2>Criar equipe</h2></div>
+          </div>
+          <div class="form-grid">
+            <input id="newTeamName" class="field" placeholder="Nome da equipe">
+            <input id="newTeamDescription" class="field" placeholder="Descrição (opcional)">
+          </div>
+          <button id="createTeamBtn" class="primary form-submit" type="button">Criar equipe</button>
+          <div id="teamCreateMessage" class="inline-message" aria-live="polite"></div>
+        </section>
+      </div>
+
+      <section class="panel">
+        <div class="panel-title-row">
+          <div><div class="eyebrow">CADASTROS</div><h2 id="teamListTitle">Equipes cadastradas</h2></div>
+          <span id="teamTotal" class="pill">0</span>
+        </div>
+        <div id="teamsList" class="management-list"><p class="muted">Carregando…</p></div>
+      </section>
+    </section>
+
+    <section id="usersView" class="team-view hidden">
+      <div class="team-head">
+        <div>
+          <div class="eyebrow">GESTÃO DE ACESSOS</div>
+          <h2>Usuários e funcionários</h2>
+          <p class="muted">Cadastre pessoas e gerencie os acessos por equipe.</p>
+        </div>
+        <button id="backAnalysisFromUsers" class="small-action" type="button">Voltar à análise</button>
+      </div>
+
+      <div id="adminUserTools">
+        <section class="panel">
+          <div class="panel-title-row">
+            <div><div class="eyebrow">NOVO ACESSO</div><h2>Cadastrar funcionário</h2></div>
+          </div>
+          <div class="form-grid">
+            <input id="newUserName" class="field" placeholder="Nome completo">
+            <input id="newUserEmail" class="field" type="email" placeholder="E-mail">
+            <input id="newUserPassword" class="field" type="password" placeholder="Senha (mínimo 8 caracteres)">
+            <select id="newUserTeam" class="field"><option value="">Selecione uma equipe</option></select>
+          </div>
+          <button id="createUserBtn" class="primary form-submit" type="button">Cadastrar funcionário</button>
+          <div id="userCreateMessage" class="inline-message" aria-live="polite"></div>
+        </section>
+      </div>
+
+      <section class="panel" id="employeesPanel">
+        <div class="panel-title-row">
+          <div><div class="eyebrow">MEMBROS</div><h2>Funcionários cadastrados</h2></div>
+        </div>
+        <div id="employeesList" class="management-list"><p class="muted">Carregando…</p></div>
+      </section>
+    </section>
+    <footer id="analysisFooter">
       <button id="closeBtn" class="secondary">Fechar</button>
       <button id="reanalyzeBtn" class="primary">Analisar seleção</button>
     </footer>
@@ -72,6 +245,247 @@
   <script>
     const $ = (id) => document.getElementById(id);
     const severityLabel = { critical: 'CRÍTICO', warning: 'AVISO', info: 'INFO' };
+    const BACKEND_URL = 'http://localhost:3001';
+    // O armazenamento pode estar bloqueado em algumas sessões/iframes do Figma.
+    // Nesse caso, o login continua funcionando durante a sessão atual do plugin.
+    const safeStorage = (() => {
+      try { return window.localStorage; } catch (_) { return null; }
+    })();
+    function readSavedToken() {
+      try { return safeStorage?.getItem('acessforge_token') || ''; } catch (_) { return ''; }
+    }
+    function saveToken(token) {
+      try { safeStorage?.setItem('acessforge_token', token); } catch (_) { /* sessão em memória */ }
+    }
+    function clearSavedToken() {
+      try { safeStorage?.removeItem('acessforge_token'); } catch (_) { /* sessão em memória */ }
+    }
+    let authToken = readSavedToken();
+    let currentSession = null;
+    let loginMode = 'admin';
+    let cachedTeams = [];
+    let currentSelectionId = '';
+    let renderedMetadataNodeId = ''; 
+
+    async function api(path, options = {}) {
+      const headers = { 'Content-Type': 'application/json', ...(options.headers || {}) };
+      if (authToken) headers.Authorization = `Bearer ${authToken}`;
+      let response;
+      try {
+        response = await fetch(`${BACKEND_URL}${path}`, { ...options, headers });
+      } catch (cause) {
+        const detail = cause instanceof Error ? cause.message : 'Falha de rede';
+        throw new Error(`Não foi possível conectar ao backend em ${BACKEND_URL}. Confirme se o terminal do backend continua aberto e se o plugin foi importado pelo manifest de desenvolvimento. Detalhe: ${detail}`);
+      }
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(data.message || 'Não foi possível concluir a operação.');
+      return data;
+    }
+    function showLogin(message = '') {
+      showRegisterView(false);
+      $('authScreen').classList.remove('hidden');
+      $('workspace').classList.add('hidden');
+      $('loginError').textContent = message;
+    }
+    function showWorkspace(session) {
+      currentSession = session;
+      $('authScreen').classList.add('hidden');
+      $('workspace').classList.remove('hidden');
+      const admin = session.user.role === 'admin';
+      $('currentUser').textContent = `${session.user.name} · ${admin ? 'Administrador' : 'Funcionário'}`;
+      $('workspaceNav').classList.remove('hidden');
+      $('teamViewBtn').classList.toggle('hidden', !admin && !session.team);
+      $('teamViewBtn').textContent = admin ? 'Equipes' : 'Minha equipe';
+      $('usersViewBtn').classList.toggle('hidden', !admin);
+      $('teamViewHeading').textContent = admin ? 'Equipes cadastradas' : 'Minha equipe';
+      $('teamViewDescription').textContent = admin
+        ? 'Crie equipes e compartilhe o código de acesso.'
+        : 'Consulte as informações da equipe vinculada à sua conta.';
+      $('adminTools').classList.toggle('hidden', !admin);
+      $('teamListTitle').textContent = admin ? 'Equipes cadastradas' : 'Dados da equipe';
+      $('teamTotal').classList.toggle('hidden', !admin);
+      $('analysisView').classList.remove('hidden');
+      $('teamView').classList.add('hidden');
+      $('usersView').classList.add('hidden');
+      $('analysisTab').classList.add('active');
+      $('teamViewBtn').classList.remove('active');
+      $('usersViewBtn').classList.remove('active');
+      $('analysisFooter').classList.remove('hidden');
+      void checkAIStatus();
+    }
+    async function validateSession() {
+      if (!authToken) return showLogin();
+      try { const session = await api('/api/auth/session'); showWorkspace(session); }
+      catch (_) { authToken = ''; clearSavedToken(); showLogin(); }
+    }
+    function setLoginMode(mode) {
+      loginMode = mode;
+      const isEmployee = mode === 'employee';
+      $('adminModeBtn').classList.toggle('active', !isEmployee);
+      $('employeeModeBtn').classList.toggle('active', isEmployee);
+      $('adminModeBtn').setAttribute('aria-pressed', String(!isEmployee));
+      $('employeeModeBtn').setAttribute('aria-pressed', String(isEmployee));
+      $('teamCodeWrap').classList.toggle('hidden', !isEmployee);
+      $('loginBtn').textContent = isEmployee ? 'Entrar como funcionário' : 'Entrar como administrador';
+      $('loginHelp').textContent = isEmployee
+        ? 'Use o código da equipe fornecido pelo administrador.'
+        : 'Entre com sua conta administrativa ou crie uma usando o código de autorização.';
+      $('loginError').textContent = '';
+    }
+    $('adminModeBtn').onclick = () => setLoginMode('admin');
+    $('employeeModeBtn').onclick = () => setLoginMode('employee');
+    function showRegisterView(show) {
+      $('loginForm').classList.toggle('hidden', show);
+      $('registerForm').classList.toggle('hidden', !show);
+      $('loginError').textContent = '';
+      $('registerError').textContent = '';
+    }
+    $('createAccountLink').onclick = () => showRegisterView(true);
+    $('backToLoginBtn').onclick = () => showRegisterView(false);
+    function setRegisterRole(role) {
+      const isAdmin = role === 'admin';
+      $('registerEmployeeFields').classList.toggle('hidden', isAdmin);
+      $('registerAdminFields').classList.toggle('hidden', !isAdmin);
+      $('registerIntro').textContent = isAdmin
+        ? 'Crie uma conta administrativa. É necessário o código privado de autorização do backend.'
+        : 'Crie sua conta de funcionário usando o código de acesso fornecido pelo administrador da equipe.';
+      $('registerError').textContent = '';
+    }
+    $('registerRole').onchange = () => setRegisterRole($('registerRole').value);
+    $('registerBtn').onclick = async () => {
+      const button = $('registerBtn');
+      const errorBox = $('registerError');
+      errorBox.textContent = '';
+      const password = $('registerPassword').value;
+      if (password !== $('registerPasswordConfirm').value) {
+        errorBox.textContent = 'As senhas não coincidem.';
+        return;
+      }
+      button.disabled = true;
+      button.textContent = 'Criando conta…';
+      try {
+        const data = await api('/api/auth/register', {
+          method: 'POST',
+          body: JSON.stringify({
+            name: $('registerName').value,
+            email: $('registerEmail').value,
+            password,
+            role: $('registerRole').value,
+            teamCode: $('registerTeamCode').value,
+            adminCode: $('registerAdminCode').value
+          })
+        });
+        authToken = data.token;
+        saveToken(authToken);
+        showWorkspace({ user: data.user, team: data.team });
+      } catch (error) {
+        errorBox.textContent = error.message;
+      } finally {
+        button.disabled = false;
+        button.textContent = 'Criar minha conta';
+      }
+    };
+    $('loginBtn').onclick = async () => {
+      const button = $('loginBtn');
+      button.disabled = true;
+      button.textContent = 'Entrando…';
+      $('loginError').textContent = '';
+      try {
+        const data = await api('/api/auth/login', { method: 'POST', body: JSON.stringify({
+          email: $('loginEmail').value,
+          password: $('loginPassword').value,
+          teamCode: loginMode === 'employee' ? $('loginTeamCode').value : ''
+        })});
+        authToken = data.token;
+        saveToken(authToken);
+        showWorkspace({ user: data.user, team: data.team });
+      } catch (error) {
+        $('loginError').textContent = error.message;
+      } finally {
+        button.disabled = false;
+        button.textContent = loginMode === 'employee' ? 'Entrar como funcionário' : 'Entrar como administrador';
+      }
+    };
+    $('loginPassword').addEventListener('keydown', e => { if (e.key === 'Enter') $('loginBtn').click(); });
+    $('logoutBtn').onclick = () => { authToken = ''; currentSession = null; clearSavedToken(); showLogin(); };
+    function activateWorkspaceTab(activeId) {
+      ['analysisTab', 'teamViewBtn', 'usersViewBtn'].forEach(id => {
+        $(id).classList.toggle('active', id === activeId);
+      });
+    }
+    $('analysisTab').onclick = () => {
+      $('teamView').classList.add('hidden');
+      $('usersView').classList.add('hidden');
+      $('analysisView').classList.remove('hidden');
+      $('analysisFooter').classList.remove('hidden');
+      activateWorkspaceTab('analysisTab');
+    };
+    $('teamViewBtn').onclick = () => openTeamView();
+    $('usersViewBtn').onclick = () => openUsersView();
+    $('backAnalysisBtn').onclick = () => $('analysisTab').click();
+    $('backAnalysisFromUsers').onclick = () => $('analysisTab').click();
+    async function openTeamView() {
+      $('analysisView').classList.add('hidden');
+      $('usersView').classList.add('hidden');
+      $('analysisFooter').classList.add('hidden');
+      $('teamView').classList.remove('hidden');
+      activateWorkspaceTab('teamViewBtn');
+      await loadManagement();
+    }
+    async function openUsersView() {
+      if (currentSession?.user?.role !== 'admin') return;
+      $('analysisView').classList.add('hidden');
+      $('teamView').classList.add('hidden');
+      $('analysisFooter').classList.add('hidden');
+      $('usersView').classList.remove('hidden');
+      activateWorkspaceTab('usersViewBtn');
+      await loadManagement();
+    }
+    async function loadManagement() {
+      try {
+        if (currentSession.user.role === 'admin') {
+          const [teamData, userData] = await Promise.all([api('/api/auth/teams'), api('/api/auth/users')]);
+          cachedTeams = teamData.teams; renderTeams(teamData.teams); renderEmployees(userData.users);
+          $('newUserTeam').innerHTML = '<option value="">Selecione uma equipe</option>' + cachedTeams.map(t => `<option value="${t.id}">${escapeHtml(t.name)}</option>`).join('');
+        } else {
+          const team = currentSession.team;
+          $('teamsList').innerHTML = team ? `<div class="management-item"><div><strong>${escapeHtml(team.name)}</strong><small>${escapeHtml(team.description || 'Equipe AcessForge')}</small></div><span class="pill">Minha equipe</span></div>` : '<p class="muted">Nenhuma equipe vinculada.</p>';
+          $('teamTotal').textContent = '1';
+          $('employeesPanel').classList.add('hidden');
+        }
+      } catch (error) { $('teamsList').innerHTML = `<p class="form-error">${escapeHtml(error.message)}</p>`; }
+    }
+    function renderTeams(teams) {
+      $('teamTotal').textContent = teams.length;
+      $('teamsList').innerHTML = teams.length ? teams.map(t => `<div class="management-item"><div><strong>${escapeHtml(t.name)}</strong><small>${escapeHtml(t.description || 'Sem descrição')} · ${t.members} funcionário(s)</small><small class="team-code">Código de acesso: <b>${escapeHtml(t.code)}</b></small></div><span class="pill ${t.active ? 'active-pill' : ''}">${t.active ? 'Ativa' : 'Inativa'}</span></div>`).join('') : '<p class="muted">Nenhuma equipe cadastrada ainda.</p>';
+    }
+    function renderEmployees(users) {
+      $('employeesList').innerHTML = users.length ? users.filter(u => u.role === 'employee').map(u => `<div class="management-item"><div><strong>${escapeHtml(u.name)}</strong><small>${escapeHtml(u.email)} · ${escapeHtml(u.teamName)}</small></div><span class="pill ${u.active ? 'active-pill' : ''}">${u.active ? 'Ativo' : 'Inativo'}</span><button class="tiny-action" data-user="${u.id}" data-active="${u.active ? 'false' : 'true'}">${u.active ? 'Desativar' : 'Ativar'}</button></div>`).join('') : '<p class="muted">Nenhum funcionário cadastrado.</p>';
+      $('employeesList').querySelectorAll('[data-user]').forEach(btn => btn.onclick = async () => {
+        try { await api(`/api/auth/users/${btn.dataset.user}/status`, { method: 'PATCH', body: JSON.stringify({ active: btn.dataset.active === 'true' }) }); await loadManagement(); }
+        catch (error) { alert(error.message); }
+      });
+    }
+    $('createTeamBtn').onclick = async () => {
+      const msg = $('teamCreateMessage'); msg.textContent = '';
+      try {
+        const data = await api('/api/auth/teams', { method: 'POST', body: JSON.stringify({ name: $('newTeamName').value, description: $('newTeamDescription').value }) });
+        msg.textContent = `Equipe criada. Código de acesso: ${data.team.code}`;
+        $('newTeamName').value = ''; $('newTeamDescription').value = ''; await loadManagement();
+      } catch (error) { msg.textContent = error.message; }
+    };
+    $('createUserBtn').onclick = async () => {
+      const msg = $('userCreateMessage'); msg.textContent = '';
+      try {
+        await api('/api/auth/users', { method: 'POST', body: JSON.stringify({
+          name: $('newUserName').value, email: $('newUserEmail').value,
+          password: $('newUserPassword').value, teamId: $('newUserTeam').value
+        })});
+        msg.textContent = 'Funcionário cadastrado com sucesso.';
+        ['newUserName','newUserEmail','newUserPassword'].forEach(id => $(id).value = '');
+        await loadManagement();
+      } catch (error) { msg.textContent = error.message; }
+    };
 
     function render(result) {
       $('selectionName').textContent = result.root.name;
@@ -81,9 +495,15 @@
       $('infoCount').textContent = result.stats.info;
       $('conformingCount').textContent = result.stats.conforming;
       $('nodeCount').textContent = `${result.stats.nodes} nó${result.stats.nodes === 1 ? '' : 's'}`;
-      $('accessibleName').textContent = result.metadata.accessibleName || '—';
-      $('altText').textContent = result.metadata.altText || '—';
-      $('role').textContent = result.metadata.role || '—';
+      currentSelectionId = result.root.id;
+      if (renderedMetadataNodeId !== currentSelectionId) {
+        $('metadataAccessibleName').value = result.metadata.accessibleName || '';
+        $('metadataAltText').value = result.metadata.altText || '';
+        $('metadataRole').value = result.metadata.role || '';
+        renderedMetadataNodeId = currentSelectionId;
+      }
+      $('saveMetadataBtn').disabled = false;
+      $('metadataSaveMessage').textContent = 'Edite os campos e salve para gravar no elemento selecionado.';
 
       const box = $('issues');
       box.classList.remove('empty');
@@ -102,6 +522,9 @@
           <p>${escapeHtml(issue.description)}</p>
           <div class="issue-meta"><span>${escapeHtml(issue.nodeName)}</span>${issue.wcag ? `<span>${escapeHtml(issue.wcag)}</span>` : ''}</div>
           ${issue.fixable ? `<button class="fix" data-issue='${encodeURIComponent(JSON.stringify(issue))}'>${escapeHtml(issue.fixLabel || 'Aplicar correção')}</button>` : ''}
+          ${issue.ruleId === 'V-02' ? `<button class="ai-suggest" data-kind="accessibleName" data-issue='${encodeURIComponent(JSON.stringify(issue))}'>Sugerir nome com IA</button>` : ''}
+          ${issue.ruleId === 'V-03' ? `<button class="ai-suggest" data-kind="altText" data-issue='${encodeURIComponent(JSON.stringify(issue))}'>Sugerir alt text com IA</button>` : ''}
+          <div class="ai-result" id="ai-${escapeHtml(issue.id)}" aria-live="polite"></div>
         </article>
       `).join('');
 
@@ -111,6 +534,42 @@
           parent.postMessage({ pluginMessage: { type: 'fix-issue', issue } }, '*');
           button.disabled = true;
           button.textContent = 'Aplicando…';
+        });
+      });
+      box.querySelectorAll('.ai-suggest').forEach(button => {
+        button.addEventListener('click', async () => {
+          const issue = JSON.parse(decodeURIComponent(button.dataset.issue));
+          const kind = button.dataset.kind;
+          const target = $('ai-' + issue.id);
+          button.disabled = true;
+          button.textContent = 'Consultando IA…';
+          target.textContent = 'Gerando sugestão…';
+          target.className = 'ai-result loading';
+          try {
+            const response = await fetch(`${BACKEND_URL}/api/ai/${kind === 'accessibleName' ? 'accessible-name' : 'alt-text'}`, {
+              method: 'POST', headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ nodeName: issue.nodeName, nodeType: issue.nodeType, context: '', visibleText: issue.description })
+            });
+            const data = await response.json();
+            if (!response.ok || !data.ok) throw new Error(data.message || 'Não foi possível consultar a IA.');
+            target.className = 'ai-result';
+            if (data.needsClarification) {
+              target.textContent = data.explanation || 'A IA precisa de mais contexto. Edite o contexto da camada no Figma e tente novamente.';
+            } else {
+              target.innerHTML = `<div class="ai-suggestion-label">Sugestão de IA — revise antes de aplicar</div><div class="ai-suggestion-value">${escapeHtml(data.value)}</div><div class="ai-explanation">${escapeHtml(data.explanation || '')}</div><button class="apply-ai">Aplicar sugestão</button>`;
+              target.querySelector('.apply-ai').addEventListener('click', () => {
+                parent.postMessage({ pluginMessage: { type: 'apply-ai-metadata', nodeId: issue.nodeId, metadataType: kind, value: data.value } }, '*');
+                target.querySelector('.apply-ai').disabled = true;
+                target.querySelector('.apply-ai').textContent = 'Aplicando…';
+              });
+            }
+          } catch (error) {
+            target.className = 'ai-result error';
+            target.textContent = error instanceof Error ? error.message : 'Falha ao consultar IA.';
+          } finally {
+            button.disabled = false;
+            button.textContent = kind === 'accessibleName' ? 'Sugerir nome com IA' : 'Sugerir alt text com IA';
+          }
         });
       });
     }
@@ -167,14 +626,58 @@
         $('issues').textContent = 'Selecione um elemento para iniciar a análise.';
         ['criticalCount','warningCount','infoCount','conformingCount'].forEach(id => $(id).textContent = '0');
         $('nodeCount').textContent = '0 nós';
+        currentSelectionId = '';
+        renderedMetadataNodeId = '';
+        $('metadataAccessibleName').value = '';
+        $('metadataAltText').value = '';
+        $('metadataRole').value = '';
+        $('saveMetadataBtn').disabled = true;
+        $('metadataSaveMessage').textContent = 'Selecione um elemento para editar suas propriedades.';
+      }
+      if (msg.type === 'metadata-saved') {
+        $('metadataSaveMessage').textContent = msg.message || 'Metadata salva no elemento.';
+        $('metadataSaveMessage').classList.remove('error');
+      }
+      if (msg.type === 'metadata-error') {
+        $('metadataSaveMessage').textContent = msg.message || 'Não foi possível salvar a metadata.';
+        $('metadataSaveMessage').classList.add('error');
+        $('saveMetadataBtn').disabled = !currentSelectionId;
       }
       if (msg.type === 'analysis') { setAnalyzeBusy(false); renderBackendState(msg.backend, msg.source); render(msg.result); }
       if (msg.type === 'selection-empty') setAnalyzeBusy(false);
     };
 
+    async function checkAIStatus() {
+      try {
+        const response = await fetch(`${BACKEND_URL}/api/ai/status`);
+        const data = await response.json();
+        $('aiStatus').textContent = data.available ? `${data.provider} ativo · ${data.model}` : (data.message || 'IA indisponível — confira a configuração do provedor no backend/.env');
+        $('aiStatus').className = data.available ? 'ai-status online' : 'ai-status';
+      } catch (_) {
+        $('aiStatus').textContent = 'IA indisponível — verifique se o backend está rodando.';
+        $('aiStatus').className = 'ai-status';
+      }
+    }
+    void checkAIStatus();
+    setRegisterRole($('registerRole').value);
+
+    $('saveMetadataBtn').onclick = () => {
+      if (!currentSelectionId) return;
+      $('saveMetadataBtn').disabled = true;
+      $('metadataSaveMessage').textContent = 'Salvando metadata…';
+      parent.postMessage({ pluginMessage: {
+        type: 'save-metadata', nodeId: currentSelectionId,
+        metadata: {
+          accessibleName: $('metadataAccessibleName').value,
+          altText: $('metadataAltText').value,
+          role: $('metadataRole').value
+        }
+      } }, '*');
+    };
     $('analyzeBtn').onclick = () => parent.postMessage({ pluginMessage: { type: 'analyze-selection' } }, '*');
     $('reanalyzeBtn').onclick = () => parent.postMessage({ pluginMessage: { type: 'analyze-selection' } }, '*');
     $('closeBtn').onclick = () => parent.postMessage({ pluginMessage: { type: 'close-plugin' } }, '*');
+    void validateSession();
   </script>
 </body>
 </html>
