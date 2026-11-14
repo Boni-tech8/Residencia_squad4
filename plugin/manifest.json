@@ -1,5 +1,5 @@
 {
-  "name": "AcessForge - MVP 2.5 Integrado",
+  "name": "AcessForge - MVP 3.7.3 (Cadastro admin e metadata acessível)",
   "id": "acessforge-mvp1",
   "api": "1.0.0",
   "main": "dist/code.js",
@@ -9,8 +9,9 @@
   "documentAccess": "dynamic-page",
   "networkAccess": {
     "allowedDomains": [
-      "none"
+      "http://localhost:3001"
     ],
+    "reasoning": "Conexão com o backend local do AcessForge para autenticação, gerenciamento de equipes e análise de acessibilidade.",
     "devAllowedDomains": [
       "http://localhost:3001"
     ]

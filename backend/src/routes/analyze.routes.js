@@ -1,7 +1,11 @@
-import {Router} from "express";
-import {analyzeController,validateController,aiStatusController} from "../controllers/analyze.controller.js";
-const router=Router();
-router.post("/analyze",analyzeController);
-router.post("/validate",validateController);
-router.get("/ai/status",aiStatusController);
+import { Router } from 'express';
+import { analyzeController, validateController } from '../controllers/analyze.controller.js';
+import { accessibleNameController, altTextController, clarificationController, aiStatusController } from '../controllers/ai.controller.js';
+const router = Router();
+router.post('/analyze', analyzeController);
+router.post('/validate', validateController);
+router.get('/ai/status', aiStatusController);
+router.post('/ai/accessible-name', accessibleNameController);
+router.post('/ai/alt-text', altTextController);
+router.post('/ai/clarification', clarificationController);
 export default router;

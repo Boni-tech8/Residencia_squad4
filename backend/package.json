@@ -1,15 +1,17 @@
 {
   "name": "acessforge-backend",
-  "version": "0.2.5",
+  "version": "0.3.6",
   "private": true,
   "type": "module",
   "scripts": {
     "dev": "node --watch src/server.js",
-    "start": "node src/server.js"
+    "start": "node src/server.js",
+    "test": "node --test"
   },
   "dependencies": {
     "cors": "^2.8.5",
     "dotenv": "^16.4.7",
     "express": "^5.1.0"
-  }
+  },
+  "description": "AcessForge backend com autenticação, equipes, cadastro de funcionários e análise de acessibilidade"
 }

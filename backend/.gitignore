@@ -1,3 +1,6 @@
 node_modules/
 .env
 *.log
+
+# Dados locais de autenticação, equipes e funcionários
+data/

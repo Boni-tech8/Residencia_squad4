@@ -4,6 +4,7 @@ export interface BackendNode {
   type: string;
   accessibleName: string;
   altText: string;
+  role?: string;
   ariaLabel?: string;
   isInteractive: boolean;
   isImage: boolean;

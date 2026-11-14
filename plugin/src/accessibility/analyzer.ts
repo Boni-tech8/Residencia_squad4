@@ -105,11 +105,15 @@ function isImageNode(node: SceneNode) {
   return node.fills.some(p => p.type === 'IMAGE');
 }
 
+function isInteractiveRole(role: string) {
+  return ['button', 'link', 'checkbox', 'radio', 'textbox', 'switch', 'combobox', 'menuitem', 'tab'].includes(role.toLowerCase());
+}
+
 function metadataIssues(node: SceneNode): Issue[] {
   const data = pluginData(node);
   const issues: Issue[] = [];
 
-  if (isControlName(node.name) && !data.accessibleName) {
+  if ((isControlName(node.name) || isInteractiveRole(data.role)) && !data.accessibleName) {
     const text = 'children' in node ? node.children.filter(c => c.type === 'TEXT').map(c => (c as TextNode).characters.trim()).filter(Boolean).join(' ') : '';
     issues.push({
       id: `V-02-${node.id}`,
@@ -128,7 +132,7 @@ function metadataIssues(node: SceneNode): Issue[] {
     });
   }
 
-  if (isImageNode(node) && !data.altText) {
+  if (isImageNode(node) && !data.altText && !['presentation', 'none', 'decorative'].includes(data.role.toLowerCase())) {
     issues.push({
       id: `V-03-${node.id}`,
       ruleId: 'V-03',
@@ -156,6 +160,7 @@ export interface BackendNodeSnapshot {
   type: string;
   accessibleName: string;
   altText: string;
+  role?: string;
   ariaLabel?: string;
   isInteractive: boolean;
   isImage: boolean;
@@ -186,7 +191,8 @@ export function toBackendNode(node: SceneNode): BackendNodeSnapshot {
     type: node.type,
     accessibleName: data.accessibleName,
     altText: data.altText,
-    isInteractive: isInteractiveForBackend(node),
+    role: data.role,
+    isInteractive: isInteractiveForBackend(node) || isInteractiveRole(data.role),
     isImage: isImageForBackend(node)
   };
 
