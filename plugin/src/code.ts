@@ -62,6 +62,7 @@ function postLocalFallback(root: SceneNode, localResult: ReturnType<typeof analy
 }
 
 async function sendAnalysis() {
+  sendSelectionContext();
   const requestId = ++analysisRequest;
   const selection = figma.currentPage.selection;
   if (!selection.length) {

@@ -119,3 +119,36 @@ export async function clarifyIssue(input) {
   });
   return { explanation: answer.slice(0, 1800) };
 }
+
+export async function chatWithAI({ message, history = [], context = null }) {
+  const safeHistory = Array.isArray(history)
+    ? history.slice(-10).filter(item =>
+        item &&
+        ['user', 'assistant'].includes(item.role) &&
+        typeof item.content === 'string'
+      )
+    : [];
+
+  const system = [
+    'Você é o assistente de acessibilidade digital do AcessForge.',
+    'Ajude designers a identificar e resolver problemas de acessibilidade em interfaces.',
+    'Responda em português do Brasil, com clareza e orientações práticas.',
+    'Não afirme que verificou elementos que não foram fornecidos.',
+    'Quando houver contexto de um elemento do Figma, considere suas informações na resposta.',
+    'Não aplique alterações automaticamente. Apenas recomende ações.'
+  ].join(' ');
+
+  const user = JSON.stringify({
+    message,
+    history: safeHistory,
+    selectedElement: context
+  });
+
+  const answer = await askAI({ system, user, temperature: 0.3 });
+
+  return {
+    answer: answer.slice(0, 4000),
+    provider: provider()
+  };
+}
+

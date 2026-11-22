@@ -614,6 +614,12 @@
     window.onmessage = event => {
       const msg = event.data.pluginMessage;
       if (!msg) return;
+      if (msg.type === 'selection-context') {
+        currentSelectionContext = msg.context || null;
+        $('chatSelectionLabel').textContent = currentSelectionContext
+          ? `${currentSelectionContext.name} · ${currentSelectionContext.type} · ${currentSelectionContext.width} × ${currentSelectionContext.height}`
+          : 'Nenhum elemento selecionado no Figma.';
+      }
       if (msg.type === 'analysis-started') {
         setAnalyzeBusy(true);
         $('issues').className = 'issues empty';
