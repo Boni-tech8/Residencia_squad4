@@ -1,5 +1,5 @@
 {
-  "name": "AcessForge - MVP 3.7.3 (Cadastro admin e metadata acessível)",
+  "name": "AcessForge - MVP 3.7.3 com Assistente IA",
   "id": "acessforge-mvp1",
   "api": "1.0.0",
   "main": "dist/code.js",
@@ -11,7 +11,7 @@
     "allowedDomains": [
       "http://localhost:3001"
     ],
-    "reasoning": "Conexão com o backend local do AcessForge para autenticação, gerenciamento de equipes e análise de acessibilidade.",
+    "reasoning": "Conexão com o backend local do AcessForge para autenticação, gerenciamento de equipes, análise de acessibilidade e chatbot de IA local ou em nuvem.",
     "devAllowedDomains": [
       "http://localhost:3001"
     ]
