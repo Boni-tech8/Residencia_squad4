@@ -41,12 +41,3 @@ O login não depende mais de `localStorage` estar disponível no iframe: quando 
 Na tela de login, clique em **Criar uma conta** e escolha o perfil. Para administrador, configure um segredo privado `ADMIN_REGISTRATION_CODE` (mínimo de 16 caracteres) no `backend/.env`; nunca o coloque no plugin. Para funcionário, use o código da equipe.
 
 Na análise, selecione um elemento e edite nome acessível, alt text e role no painel **Metadata de Acessibilidade**. Clique em **Salvar metadata no elemento**. Os dados permanecem gravados como plugin data no arquivo Figma e podem ser lidos novamente pelo plugin.
-
-
-## Assistente IA integrado
-
-Depois de iniciar o backend e o provedor configurado (`Ollama` ou `OpenAI`), faça login no plugin e abra a aba **Assistente IA**. O chat permite perguntas independentes sobre acessibilidade.
-
-A opção **Usar contexto da seleção atual** envia ao backend apenas nome, tipo, dimensões, textos encontrados em camadas descendentes e metadata de acessibilidade do elemento selecionado. Nenhuma imagem ou captura de tela é enviada. Desmarque a opção para conversar sem contexto do documento.
-
-O assistente não altera o arquivo Figma por conta própria. Ele pode recomendar mudanças, mas a aplicação continua dependendo de uma ação explícita no plugin.

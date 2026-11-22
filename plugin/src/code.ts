@@ -52,39 +52,6 @@ function mergeBackendIssues(localIssues: Issue[], backendIssues: BackendIssue[])
   return [...merged.values()];
 }
 
-function sendSelectionContext() {
-  const selected = figma.currentPage.selection[0];
-  if (!selected) {
-    figma.ui.postMessage({ type: 'selection-context', context: null });
-    return;
-  }
-
-  const textSnippets: string[] = [];
-  function collectText(node: SceneNode, depth: number) {
-    if (depth > 3 || textSnippets.join(' ').length > 900) return;
-    if (node.type === 'TEXT' && node.characters.trim()) {
-      textSnippets.push(node.characters.trim().slice(0, 240));
-    }
-    if ('children' in node) {
-      for (const child of node.children.slice(0, 20)) collectText(child, depth + 1);
-    }
-  }
-  collectText(selected, 0);
-
-  const context = {
-    id: selected.id,
-    name: selected.name.slice(0, 160),
-    type: selected.type,
-    width: Math.round(selected.width),
-    height: Math.round(selected.height),
-    text: textSnippets.join(' | ').slice(0, 1000),
-    accessibleName: selected.getPluginData('a11y:accessibleName').slice(0, 200),
-    altText: selected.getPluginData('a11y:altText').slice(0, 400),
-    role: selected.getPluginData('a11y:role').slice(0, 50)
-  };
-  figma.ui.postMessage({ type: 'selection-context', context });
-}
-
 function postLocalFallback(root: SceneNode, localResult: ReturnType<typeof analyzeNode>, message?: string) {
   figma.ui.postMessage({
     type: 'analysis',

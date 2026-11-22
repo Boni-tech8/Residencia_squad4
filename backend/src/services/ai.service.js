@@ -119,39 +119,3 @@ export async function clarifyIssue(input) {
   });
   return { explanation: answer.slice(0, 1800) };
 }
-
-
-export async function chatWithAI({ message, history = [], context = null }) {
-  const system = [
-    'Você é o assistente do AcessForge, especializado em acessibilidade digital, design inclusivo, WCAG e handoff de design para desenvolvimento.',
-    'Responda em português do Brasil, com clareza e objetividade. Explique conceitos e ofereça passos práticos.',
-    'Não afirme ter inspecionado o arquivo Figma; use somente o contexto textual fornecido.',
-    'Quando houver contexto de seleção, use-o como referência, mas não presuma interações, finalidade ou conteúdo visual que não estejam descritos.',
-    'Você pode recomendar alterações de metadata, mas nunca aplique alterações no Figma. A aplicação sempre depende de ação explícita do usuário no plugin.',
-    'Se faltar informação essencial, faça uma pergunta objetiva. Diferencie recomendações de requisitos normativos.'
-  ].join(' ');
-
-  const messages = [{ role: 'system', content: system }];
-  if (context && typeof context === 'object') {
-    messages.push({
-      role: 'system',
-      content: `Contexto limitado do elemento atualmente selecionado no Figma (informações textuais fornecidas pelo plugin): ${JSON.stringify(context).slice(0, 3500)}`
-    });
-  }
-  for (const item of history.slice(-10)) {
-    if (item && ['user', 'assistant'].includes(item.role) && typeof item.content === 'string') {
-      messages.push({ role: item.role, content: item.content.slice(0, 3000) });
-    }
-  }
-  messages.push({ role: 'user', content: message.slice(0, 3000) });
-
-  const answer = await askAI({
-    system,
-    user: JSON.stringify({
-      context: context && typeof context === 'object' ? context : null,
-      conversation: messages.slice(1).map(({ role, content }) => ({ role, content }))
-    }),
-    temperature: 0.35
-  });
-  return { answer: answer.slice(0, 5000), provider: provider() };
-}

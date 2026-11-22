@@ -93,7 +93,6 @@
 
     <nav id="workspaceNav" class="workspace-nav hidden" aria-label="Navegação do plugin">
       <button id="analysisTab" class="nav-tab active" type="button">Análise</button>
-      <button id="assistantTab" class="nav-tab" type="button">Assistente IA</button>
       <button id="teamViewBtn" class="nav-tab hidden" type="button">Equipes</button>
       <button id="usersViewBtn" class="nav-tab hidden" type="button">Usuários</button>
     </nav>
@@ -170,53 +169,6 @@
         <p class="hint">Os dados são gravados no próprio elemento do Figma como plugin data. Eles acompanham o arquivo e podem ser usados no handoff; não alteram automaticamente o HTML/ARIA de um site publicado.</p>
       </section>
     </main>
-
-    <section id="assistantView" class="assistant-view hidden">
-      <div class="assistant-heading">
-        <div>
-          <div class="eyebrow">ACESSFORGE AI ASSISTANT</div>
-          <h2>Assistente de acessibilidade</h2>
-          <p class="muted">Converse com a IA local (Ollama) ou com a OpenAI configurada no backend.</p>
-        </div>
-        <button id="clearChatBtn" class="small-action" type="button">Limpar conversa</button>
-      </div>
-
-      <section class="assistant-status panel">
-        <div class="assistant-status-line">
-          <span id="chatProviderDot" class="provider-dot checking"></span>
-          <strong id="chatProviderStatus">Verificando conexão com a IA…</strong>
-        </div>
-        <p id="chatProviderMessage" class="muted">O backend local e o provedor de IA precisam estar ativos.</p>
-      </section>
-
-      <section class="chat-context panel">
-        <label class="context-toggle">
-          <input id="useSelectionContext" type="checkbox" checked>
-          <span><strong>Usar contexto da seleção atual</strong><small id="chatSelectionLabel">Nenhum elemento selecionado no Figma.</small></span>
-        </label>
-        <p class="hint">Somente nome, tipo, dimensões, textos encontrados e metadata de acessibilidade do elemento selecionado são enviados. A IA não recebe uma captura de tela nem o documento inteiro.</p>
-      </section>
-
-      <div id="chatMessages" class="chat-messages" role="log" aria-live="polite" aria-label="Conversa com o assistente">
-        <div class="chat-empty">
-          <strong>Olá! Como posso ajudar?</strong>
-          <p>Você pode perguntar sobre WCAG, acessibilidade, metadata ou pedir uma análise textual do elemento selecionado.</p>
-          <div class="chat-prompts">
-            <button class="prompt-chip" type="button" data-prompt="Explique os principais critérios WCAG para botões acessíveis.">Boas práticas para botões</button>
-            <button class="prompt-chip" type="button" data-prompt="Ajude-me a definir um nome acessível para o elemento selecionado.">Nome acessível</button>
-          </div>
-        </div>
-      </div>
-
-      <form id="chatForm" class="chat-composer">
-        <textarea id="chatInput" class="field" rows="3" maxlength="3000" placeholder="Escreva sua pergunta…" aria-label="Mensagem para o assistente"></textarea>
-        <div class="chat-composer-footer">
-          <span class="hint">Enter envia · Shift + Enter quebra linha</span>
-          <button id="sendChatBtn" class="primary" type="submit">Enviar</button>
-        </div>
-      </form>
-      <div id="chatError" class="chat-error" role="alert"></div>
-    </section>
 
     <section id="teamView" class="team-view hidden">
       <div class="team-head">
@@ -313,10 +265,7 @@
     let loginMode = 'admin';
     let cachedTeams = [];
     let currentSelectionId = '';
-    let renderedMetadataNodeId = '';
-    let currentSelectionContext = null;
-    let chatHistory = [];
-    let chatBusy = false;
+    let renderedMetadataNodeId = ''; 
 
     async function api(path, options = {}) {
       const headers = { 'Content-Type': 'application/json', ...(options.headers || {}) };
@@ -332,13 +281,7 @@
       if (!response.ok) throw new Error(data.message || 'Não foi possível concluir a operação.');
       return data;
     }
-    function resetChatConversation() {
-      chatHistory = [];
-      if ($('chatMessages')) $('chatMessages').innerHTML = `<div class="chat-empty"><strong>Olá! Como posso ajudar?</strong><p>Você pode perguntar sobre WCAG, acessibilidade, metadata ou pedir uma análise textual do elemento selecionado.</p></div>`;
-      if ($('chatError')) $('chatError').textContent = '';
-    }
     function showLogin(message = '') {
-      resetChatConversation();
       showRegisterView(false);
       $('authScreen').classList.remove('hidden');
       $('workspace').classList.add('hidden');
@@ -362,11 +305,9 @@
       $('teamListTitle').textContent = admin ? 'Equipes cadastradas' : 'Dados da equipe';
       $('teamTotal').classList.toggle('hidden', !admin);
       $('analysisView').classList.remove('hidden');
-      $('assistantView').classList.add('hidden');
       $('teamView').classList.add('hidden');
       $('usersView').classList.add('hidden');
       $('analysisTab').classList.add('active');
-      $('assistantTab').classList.remove('active');
       $('teamViewBtn').classList.remove('active');
       $('usersViewBtn').classList.remove('active');
       $('analysisFooter').classList.remove('hidden');
@@ -468,27 +409,16 @@
     $('loginPassword').addEventListener('keydown', e => { if (e.key === 'Enter') $('loginBtn').click(); });
     $('logoutBtn').onclick = () => { authToken = ''; currentSession = null; clearSavedToken(); showLogin(); };
     function activateWorkspaceTab(activeId) {
-      ['analysisTab', 'assistantTab', 'teamViewBtn', 'usersViewBtn'].forEach(id => {
+      ['analysisTab', 'teamViewBtn', 'usersViewBtn'].forEach(id => {
         $(id).classList.toggle('active', id === activeId);
       });
     }
     $('analysisTab').onclick = () => {
       $('teamView').classList.add('hidden');
       $('usersView').classList.add('hidden');
-      $('assistantView').classList.add('hidden');
       $('analysisView').classList.remove('hidden');
       $('analysisFooter').classList.remove('hidden');
       activateWorkspaceTab('analysisTab');
-    };
-    $('assistantTab').onclick = () => {
-      $('analysisView').classList.add('hidden');
-      $('teamView').classList.add('hidden');
-      $('usersView').classList.add('hidden');
-      $('assistantView').classList.remove('hidden');
-      $('analysisFooter').classList.add('hidden');
-      activateWorkspaceTab('assistantTab');
-      void checkAIStatus();
-      $('chatInput').focus();
     };
     $('teamViewBtn').onclick = () => openTeamView();
     $('usersViewBtn').onclick = () => openUsersView();
@@ -496,7 +426,6 @@
     $('backAnalysisFromUsers').onclick = () => $('analysisTab').click();
     async function openTeamView() {
       $('analysisView').classList.add('hidden');
-      $('assistantView').classList.add('hidden');
       $('usersView').classList.add('hidden');
       $('analysisFooter').classList.add('hidden');
       $('teamView').classList.remove('hidden');
@@ -506,7 +435,6 @@
     async function openUsersView() {
       if (currentSession?.user?.role !== 'admin') return;
       $('analysisView').classList.add('hidden');
-      $('assistantView').classList.add('hidden');
       $('teamView').classList.add('hidden');
       $('analysisFooter').classList.add('hidden');
       $('usersView').classList.remove('hidden');
@@ -725,95 +653,15 @@
       if (msg.type === 'selection-empty') setAnalyzeBusy(false);
     };
 
-    function appendChatMessage(role, content) {
-      const box = $('chatMessages');
-      const empty = box.querySelector('.chat-empty');
-      if (empty) empty.remove();
-      const item = document.createElement('div');
-      item.className = `chat-message ${role}`;
-      const label = document.createElement('span');
-      label.className = 'chat-message-label';
-      label.textContent = role === 'user' ? 'Você' : 'AcessForge AI';
-      const body = document.createElement('div');
-      body.className = 'chat-message-content';
-      body.textContent = content;
-      item.append(label, body);
-      box.appendChild(item);
-      box.scrollTop = box.scrollHeight;
-    }
-
-    async function sendChatMessage(rawMessage) {
-      const message = String(rawMessage || '').trim();
-      if (!message || chatBusy) return;
-      if (!authToken) {
-        $('chatError').textContent = 'Sua sessão expirou. Entre novamente para usar o assistente.';
-        return;
-      }
-      const previousHistory = chatHistory.slice(-10);
-      chatHistory.push({ role: 'user', content: message });
-      appendChatMessage('user', message);
-      $('chatError').textContent = '';
-      $('chatInput').value = '';
-      chatBusy = true;
-      $('sendChatBtn').disabled = true;
-      $('sendChatBtn').textContent = 'Pensando…';
-      const useContext = $('useSelectionContext').checked && currentSelectionContext;
-      try {
-        const data = await api('/api/ai/chat', {
-          method: 'POST',
-          body: JSON.stringify({
-            message,
-            history: previousHistory,
-            context: useContext ? currentSelectionContext : null
-          })
-        });
-        chatHistory.push({ role: 'assistant', content: data.answer });
-        appendChatMessage('assistant', data.answer);
-      } catch (error) {
-        $('chatError').textContent = error.message || 'Não foi possível consultar a IA.';
-        // Mantém a mensagem visível, mas não a inclui no histórico enviado na próxima tentativa.
-        chatHistory.pop();
-      } finally {
-        chatBusy = false;
-        $('sendChatBtn').disabled = false;
-        $('sendChatBtn').textContent = 'Enviar';
-        $('chatInput').focus();
-      }
-    }
-
-    $('chatForm').addEventListener('submit', event => {
-      event.preventDefault();
-      void sendChatMessage($('chatInput').value);
-    });
-    $('chatInput').addEventListener('keydown', event => {
-      if (event.key === 'Enter' && !event.shiftKey) {
-        event.preventDefault();
-        $('chatForm').requestSubmit();
-      }
-    });
-    $('clearChatBtn').onclick = () => {
-      if (chatBusy) return;
-      resetChatConversation();
-    };
-    document.querySelectorAll('.prompt-chip').forEach(button => {
-      button.addEventListener('click', () => void sendChatMessage(button.dataset.prompt || ''));
-    });
-
     async function checkAIStatus() {
       try {
         const response = await fetch(`${BACKEND_URL}/api/ai/status`);
         const data = await response.json();
         $('aiStatus').textContent = data.available ? `${data.provider} ativo · ${data.model}` : (data.message || 'IA indisponível — confira a configuração do provedor no backend/.env');
         $('aiStatus').className = data.available ? 'ai-status online' : 'ai-status';
-        $('chatProviderStatus').textContent = data.available ? `${data.provider} conectado` : 'IA indisponível';
-        $('chatProviderMessage').textContent = data.message || (data.available ? `Modelo: ${data.model}` : 'Verifique o backend e o provedor configurado.');
-        $('chatProviderDot').className = `provider-dot ${data.available ? 'online' : 'offline'}`;
       } catch (_) {
         $('aiStatus').textContent = 'IA indisponível — verifique se o backend está rodando.';
         $('aiStatus').className = 'ai-status';
-        $('chatProviderStatus').textContent = 'Backend indisponível';
-        $('chatProviderMessage').textContent = 'Inicie o backend local para conversar com a IA.';
-        $('chatProviderDot').className = 'provider-dot offline';
       }
     }
     void checkAIStatus();

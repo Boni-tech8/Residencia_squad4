@@ -49,15 +49,6 @@ Servidor padrão: `http://localhost:3001`.
 - `POST /api/ai/accessible-name` — sugestão de nome acessível.
 - `POST /api/ai/alt-text` — sugestão de texto alternativo.
 - `POST /api/ai/clarification` — explicação e solicitação de contexto.
-- `POST /api/ai/chat` — conversa com o assistente integrado (requer sessão autenticada). Envie `message`, `history` opcional e `context` opcional da seleção atual.
-
-## Chatbot integrado ao Figma
-
-Após iniciar o Ollama e o backend, entre no plugin e abra a aba **Assistente IA**. O chat usa o provedor definido em `AI_PROVIDER` e a mesma sessão autenticada do usuário.
-
-O modo contextual é opcional: quando habilitado, o plugin envia somente nome, tipo, dimensões, trechos de texto encontrados e metadata de acessibilidade do elemento selecionado. Não envia imagem, screenshot nem o documento inteiro. A conversa não executa mudanças no arquivo; sugestões devem ser aplicadas manualmente pelo usuário usando os recursos do plugin.
-
-Rota `POST /api/ai/chat` exige `Authorization: Bearer <token>` e aceita mensagens de até 3.000 caracteres, com até 10 mensagens anteriores no histórico.
 
 ## Limitações
 O alt text é gerado com base no contexto textual, sem análise dos pixels. Revise as sugestões antes de aplicá-las.
